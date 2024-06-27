@@ -1,7 +1,53 @@
 ﻿@page "/"
+@Response
+<button @onclick="DoAiStuff">Start</button>
+@code{
+    string Response = "";
+    static async IAsyncEnumerable<string> StreamTextAsync(string text)
+    {
+        string[] words = text.Split(' ');
+        foreach (var word in words)
+        {
+            yield return word;
+            await Task.Delay(1000);
+        }
+    }
+    async ValueTask<string> SeniorAI(string Message)
+    {
+        var CodeAgent = StreamTextAsync(Message);
+        var chatMessage = "";
+        Response += Environment.NewLine;
+        await foreach (var content in CodeAgent)
+        {
+            chatMessage += content;
+            Response += content;
+            await InvokeAsync(StateHasChanged);
+        }
+        return chatMessage;
+    }
+    async ValueTask<string> JunoirAI(string Message)
+    {
+        var CodeAgent = StreamTextAsync(Message);
+        var chatMessage = "";
+        Response += Environment.NewLine;
+        await foreach (var content in CodeAgent)
+        {
+            chatMessage += content;
+            Response += content;
+            await InvokeAsync(StateHasChanged);
 
-<PageTitle>Home</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
+        }
+        return chatMessage;
+    }
+    async Task DoAiStuff()
+    {
+        Response = "";
+        var SrAnswer = await SeniorAI("1 2 3 4");
+    while (true)
+        {
+            var JrAnswer = await JunoirAI(SrAnswer);
+            SrAnswer = await SeniorAI(JrAnswer);
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}
